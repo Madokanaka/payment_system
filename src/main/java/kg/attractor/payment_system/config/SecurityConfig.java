@@ -53,7 +53,7 @@ public class SecurityConfig {
                 .logout(AbstractHttpConfigurer::disable)
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/api/accounts/**").hasAnyAuthority("APPLICANT", "ADMIN")
+                        .requestMatchers("/api/accounts/**", "/api/transactions/**").hasAnyAuthority("APPLICANT", "ADMIN")
                         .requestMatchers("/api/admin/transactions/**").hasAuthority("ADMIN")
                         .anyRequest().permitAll()
                 );
