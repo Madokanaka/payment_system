@@ -18,7 +18,6 @@ public class AccountController {
 
     @PostMapping("/create")
     public String createAccount(@AuthenticationPrincipal User principal, @RequestBody AccountRequestDto accountRequestDto) {
-        String userName = String.valueOf(principal.getUsername());
-        return accountService.createAccount(userName,  accountRequestDto.getCurrency());
+        return accountService.createAccount(principal,  accountRequestDto.getCurrency());
     }
 }

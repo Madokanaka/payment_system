@@ -43,5 +43,17 @@ public class AccountDao {
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, accountNumber);
         return count != null && count > 0;
     }
+
+    public int countAccountsByUserId(Long userId) {
+        String query = "SELECT COUNT(*) FROM accounts WHERE user_id = ?";
+        Integer count = jdbcTemplate.queryForObject(query, Integer.class, userId);
+        return count != null ? count : 0;
+    }
+
+    public int countAccountsByUserIdAndCurrency(Long userId, Long currencyId) {
+        String query = "SELECT COUNT(*) FROM accounts WHERE user_id = ? AND currency_id = ?";
+        Integer count = jdbcTemplate.queryForObject(query, Integer.class, userId, currencyId);
+        return count != null ? count : 0;
+    }
 }
 
