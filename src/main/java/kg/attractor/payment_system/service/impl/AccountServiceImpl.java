@@ -14,6 +14,7 @@ import kg.attractor.payment_system.model.Currency;
 import kg.attractor.payment_system.model.Transaction;
 import kg.attractor.payment_system.service.AccountService;
 import kg.attractor.payment_system.util.AccountUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.security.core.userdetails.User;
@@ -27,6 +28,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class AccountServiceImpl implements AccountService {
 
     @Autowired
@@ -44,11 +46,13 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public List<AccountResponseDto> getAccountsForUser(User principal) {
         if (principal == null) {
+            log.warn("User is not authenticated");
             throw new BadRequestException("User is not authenticated");
         }
         Long userId = userDao.getIdByPhoneNumber(principal.getUsername());
         List<Account> accounts = accountDAO.findAccountsByUserId(userId);
         if (accounts.isEmpty()) {
+            log.warn("No accounts found for user with ID: {}", userId);
             throw new AccountNotFoundException("User has no accounts yet");
         }
         return accounts.stream()
@@ -60,11 +64,13 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public String createAccount(User principal, String currencyName) {
         if (principal == null) {
+            log.warn("User is not authenticated");
             throw new BadRequestException("User is not authenticated");
         }
         Currency currency = currencyDAO.findCurrencyByName(currencyName.toUpperCase());
 
         if (currency == null) {
+            log.error("Currency '{}' not found", currencyName);
             throw new CurrencyNotFoundException("Currency not found");
         }
 
@@ -75,11 +81,13 @@ public class AccountServiceImpl implements AccountService {
 
         int userAccountCount = accountDAO.countAccountsByUserId(userId);
         if (userAccountCount >= 3) {
+            log.error("User with ID {} has reached the maximum limit of accounts (3)", userId);
             throw new BadRequestException("A user can have no more than 3 accounts");
         }
 
         int userCurrencyAccountCount = accountDAO.countAccountsByUserIdAndCurrency(userId, currency.getId());
         if (userCurrencyAccountCount >= 1) {
+            log.error("User with ID {} already has an account in currency {}", userId, currencyName);
             throw new BadRequestException("A user can have no more than one account per currency");
         }
 
@@ -94,6 +102,7 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public String getAccountBalance(String accountNumber) {
         if (!accountDAO.existsByAccountNumber(accountNumber)) {
+            log.error("Account with account number '{}' was not found", accountNumber);
             throw new AccountNotFoundException("Account with the account number " + accountNumber + " was not found");
         }
 
@@ -110,18 +119,21 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public void updateBalance(User principal, BalanceUpdateRequestDto balanceUpdateRequestDto) {
         if (principal == null) {
+            log.warn("User is not authenticated");
             throw new BadRequestException("User is not authenticated");
         }
         String accountNumber = balanceUpdateRequestDto.getAccountNumber();
         BigDecimal amount = balanceUpdateRequestDto.getAmount();
 
         if (!accountDAO.existsByAccountNumber(accountNumber)) {
+            log.error("Account with account number '{}' was not found", accountNumber);
             throw new AccountNotFoundException("Account with the account number " + accountNumber + " was not found");
         }
         Account account = accountDAO.findAccountByAccountNumber(accountNumber);
 
         Long userId = userDao.getIdByPhoneNumber(principal.getUsername());
         if (!userId.equals(account.getUserId())) {
+            log.error("User with ID {} tried to update balance for an account that does not belong to them", userId);
             throw new BadRequestException("Account belongs to another user");
         }
 

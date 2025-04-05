@@ -12,6 +12,7 @@ import kg.attractor.payment_system.model.Transaction;
 import kg.attractor.payment_system.model.TransactionRollback;
 import kg.attractor.payment_system.service.AdminService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +23,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AdminServiceImpl implements AdminService {
 
     private final TransactionDao transactionDao;
@@ -32,6 +34,7 @@ public class AdminServiceImpl implements AdminService {
     public List<TransactionDto> getAllTransactions() {
         List<Transaction> transactions = transactionDao.findAll();
         if (transactions.isEmpty()) {
+            log.warn("No transactions found.");
             throw new TransactionNotFoundException("No transactions found.");
         }
         return toTransactionDtoList(transactions);
@@ -41,6 +44,7 @@ public class AdminServiceImpl implements AdminService {
     public List<TransactionDto> getPendingApprovalTransactions() {
         List<Transaction> transactions = transactionDao.findPendingApprovalTransactions();
         if (transactions.isEmpty()) {
+            log.warn("No pending approval transactions found.");
             throw new TransactionNotFoundException(
                     "No pending approval transactions found.");
         }
@@ -71,11 +75,13 @@ public class AdminServiceImpl implements AdminService {
     @Transactional
     public void approveTransaction(Long transactionId) {
         if (!transactionDao.existsById(transactionId)) {
+            log.error("Transaction with ID {} not found.", transactionId);
             throw new TransactionNotFoundException("Transaction not found");
         }
         Transaction transaction = transactionDao.findById(transactionId);
 
         if (transaction.getTransactionType().equalsIgnoreCase("BALANCE_UPDATE")) {
+            log.error("Transaction with ID {} is a balance update and doesn't require approval.", transactionId);
             throw new BadRequestException("Balance updates don't require approval.");
         }
 
@@ -85,10 +91,13 @@ public class AdminServiceImpl implements AdminService {
                 transaction.setApprovedAt(new Timestamp(System.currentTimeMillis()));
 
                 transactionDao.updateTransactionStatus(transaction);
+                log.info("Transaction with ID {} has been approved.", transactionId);
             } else {
+                log.error("Transaction with ID {} does not require approval as its amount is less than or equal to 10.", transactionId);
                 throw new BadRequestException("Transaction does not require approval.");
             }
         } else {
+            log.error("Transaction with ID {} has already been processed.", transactionId);
             throw new BadRequestException("Transaction has already been processed.");
         }
     }
@@ -97,11 +106,13 @@ public class AdminServiceImpl implements AdminService {
     @Override
     public void rollbackTransaction(Long transactionId) {
         if (!transactionDao.existsById(transactionId)) {
+            log.error("Transaction with ID {} not found.", transactionId);
             throw new TransactionNotFoundException("Transaction not found");
         }
         Transaction transaction = transactionDao.findById(transactionId);
 
         if (!transaction.getStatus().equals("PENDING")) {
+            log.error("Transaction with ID {} has already been processed or doesn't need rollback.", transactionId);
             throw new BadRequestException("Transaction has already been processed or doesn't need it.");
         }
 
@@ -109,6 +120,7 @@ public class AdminServiceImpl implements AdminService {
         Account receiverAccount = accountDao.findAccountByAccountId(transaction.getReceiverAccountId());
 
         if (receiverAccount.getBalance().compareTo(transaction.getAmount()) < 0) {
+            log.error("Not enough funds to rollback transaction with ID {}.", transactionId);
             throw new NotAcceptableException("Not enough funds to rollback transaction.");
         }
 
@@ -127,31 +139,37 @@ public class AdminServiceImpl implements AdminService {
         transactionRollbackDao.createRollback(rollback);
         transaction.setStatus("ROLLED_BACK");
         transactionDao.updateTransactionStatus(transaction);
+        log.info("Transaction with ID {} has been rolled back successfully.", transactionId);
     }
 
     @Transactional
     @Override
     public void deleteTransaction(Long transactionRollbackId) {
         if (!transactionRollbackDao.existsById(transactionRollbackId)) {
+            log.error("Transaction rollback entry with ID {} not found.", transactionRollbackId);
             throw new TransactionNotFoundException("Transaction rollback entry not found.");
         }
 
         TransactionRollback rollback = transactionRollbackDao.findById(transactionRollbackId);
         if (!transactionDao.existsById(rollback.getTransactionId())) {
+            log.error("Transaction with ID {} not found.", rollback.getTransactionId());
             throw new TransactionNotFoundException("Transaction not found.");
         }
         Transaction transaction = transactionDao.findById(rollback.getTransactionId());
 
         if (transaction.getStatus().equals("DELETED")) {
+            log.error("Transaction with ID {} has already been marked as deleted.", rollback.getTransactionId());
             throw new BadRequestException("Transaction has already been marked as deleted.");
         }
 
         if (!transaction.getStatus().equals("ROLLED_BACK")) {
+            log.error("Transaction with ID {} must be rolled back before deletion.", rollback.getTransactionId());
             throw new BadRequestException("Transaction must be rolled back before deletion.");
         }
 
 
         transaction.setStatus("DELETED");
         transactionDao.updateTransactionStatus(transaction);
+        log.info("Transaction with ID {} has been marked as deleted.", rollback.getTransactionId());
     }
 }
