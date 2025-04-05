@@ -1,0 +1,32 @@
+databaseChangeLog:
+  - changeSet:
+      id: 010 rollbacks
+      author: Seitek
+      changes:
+        - createTable:
+            tableName: transaction_rollbacks
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+              - column:
+                  name: transaction_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_transaction_id
+                    references: transactions(id)
+              - column:
+                  name: rollbacked_at
+                  type: timestamp
+                  constraints:
+                    nullable: false
+              - column:
+                  name: amount
+                  type: decimal(15, 2)
+                  constraints:
+                    nullable: false
