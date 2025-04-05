@@ -2,6 +2,7 @@ package kg.attractor.payment_system.service.impl;
 
 import kg.attractor.payment_system.dao.AccountDao;
 import kg.attractor.payment_system.dao.CurrencyDao;
+import kg.attractor.payment_system.dao.TransactionDao;
 import kg.attractor.payment_system.dao.UserDao;
 import kg.attractor.payment_system.dto.AccountResponseDto;
 import kg.attractor.payment_system.dto.BalanceUpdateRequestDto;
@@ -10,6 +11,7 @@ import kg.attractor.payment_system.exception.CurrencyNotFoundException;
 import kg.attractor.payment_system.exception.AccountNotFoundException;
 import kg.attractor.payment_system.model.Account;
 import kg.attractor.payment_system.model.Currency;
+import kg.attractor.payment_system.model.Transaction;
 import kg.attractor.payment_system.service.AccountService;
 import kg.attractor.payment_system.util.AccountUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +37,9 @@ public class AccountServiceImpl implements AccountService {
 
     @Autowired
     private UserDao userDao;
+
+    @Autowired
+    private TransactionDao transactionDao;
 
     @Override
     public List<AccountResponseDto> getAccountsForUser(User principal) {
@@ -123,6 +128,18 @@ public class AccountServiceImpl implements AccountService {
         account.setBalance(account.getBalance().add(amount));
 
         accountDAO.updateBalance(account);
+        Long accountId = account.getId();
+        Transaction transaction = new Transaction().builder().
+                senderAccountId(accountId).
+                receiverAccountId(accountId).
+                amount(amount).
+                status("COMPLETED").
+                transactionType("BALANCE_UPDATE").
+                createdAt(new java.sql.Timestamp(new java.util.Date().getTime())).
+                approvedAt(new java.sql.Timestamp(new java.util.Date().getTime())).
+                build();
+
+        transactionDao.createTransaction(transaction);
     }
 
 }

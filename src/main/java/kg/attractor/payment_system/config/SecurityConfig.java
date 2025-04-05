@@ -54,6 +54,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/api/accounts/**").hasAnyAuthority("APPLICANT", "ADMIN")
+                        .requestMatchers("/api/admin/transactions/**").hasAuthority("ADMIN")
                         .anyRequest().permitAll()
                 );
                 return http.build();
