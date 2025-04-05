@@ -2,11 +2,14 @@ package kg.attractor.payment_system.service.impl;
 
 import kg.attractor.payment_system.dao.AccountDao;
 import kg.attractor.payment_system.dao.TransactionDao;
+import kg.attractor.payment_system.dao.TransactionRollbackDao;
 import kg.attractor.payment_system.dto.TransactionDto;
 import kg.attractor.payment_system.exception.BadRequestException;
+import kg.attractor.payment_system.exception.NotAcceptableException;
 import kg.attractor.payment_system.exception.TransactionNotFoundException;
 import kg.attractor.payment_system.model.Account;
 import kg.attractor.payment_system.model.Transaction;
+import kg.attractor.payment_system.model.TransactionRollback;
 import kg.attractor.payment_system.service.AdminService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,7 +26,7 @@ public class AdminServiceImpl implements AdminService {
 
     private final TransactionDao transactionDao;
     private final AccountDao accountDao;
-
+    private final TransactionRollbackDao transactionRollbackDao;
 
     @Override
     public List<TransactionDto> getAllTransactions() {
@@ -72,6 +75,10 @@ public class AdminServiceImpl implements AdminService {
         }
         Transaction transaction = transactionDao.findById(transactionId);
 
+        if (transaction.getTransactionType().equalsIgnoreCase("BALANCE_UPDATE")) {
+            throw new BadRequestException("Balance updates don't require approval.");
+        }
+
         if (transaction.getStatus().equals("PENDING")) {
             if (transaction.getAmount().compareTo(BigDecimal.valueOf(10)) > 0) {
                 transaction.setStatus("APPROVED");
@@ -84,5 +91,41 @@ public class AdminServiceImpl implements AdminService {
         } else {
             throw new BadRequestException("Transaction has already been processed.");
         }
+    }
+
+    @Transactional
+    @Override
+    public void rollbackTransaction(Long transactionId) {
+        if (!transactionDao.existsById(transactionId)) {
+            throw new TransactionNotFoundException("Transaction not found");
+        }
+        Transaction transaction = transactionDao.findById(transactionId);
+
+        if (!transaction.getStatus().equals("PENDING")) {
+            throw new BadRequestException("Transaction has already been processed or doesn't need it.");
+        }
+
+        Account senderAccount = accountDao.findAccountByAccountId(transaction.getSenderAccountId());
+        Account receiverAccount = accountDao.findAccountByAccountId(transaction.getReceiverAccountId());
+
+        if (receiverAccount.getBalance().compareTo(transaction.getAmount()) < 0) {
+            throw new NotAcceptableException("Not enough funds to rollback transaction.");
+        }
+
+        senderAccount.setBalance(senderAccount.getBalance().add(transaction.getAmount()));
+        accountDao.updateBalance(senderAccount);
+
+        receiverAccount.setBalance(receiverAccount.getBalance().subtract(transaction.getAmount()));
+        accountDao.updateBalance(receiverAccount);
+
+        TransactionRollback rollback = new TransactionRollback(
+                null,
+                transactionId,
+                new Timestamp(System.currentTimeMillis()),
+                transaction.getAmount()
+        );
+        transactionRollbackDao.createRollback(rollback);
+        transaction.setStatus("ROLLED_BACK");
+        transactionDao.updateTransactionStatus(transaction);
     }
 }

@@ -32,4 +32,11 @@ public class AdminController {
         adminTransactionService.approveTransaction(transactionId);
         return ResponseEntity.ok("Transaction approved successfully.");
     }
+
+    @PostMapping("/rollback")
+    public ResponseEntity<String> rollbackTransaction(@RequestParam Long transactionId) {
+        adminTransactionService.rollbackTransaction(transactionId);
+        return ResponseEntity.ok("Transaction rolled back successfully.");
+    }
 }
+
