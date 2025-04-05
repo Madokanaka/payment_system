@@ -1,0 +1,20 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001 create authorities table
+      author: Seitek
+      changes:
+        - createTable:
+            tableName: authorities
+            columns:
+              - column:
+                  name: id
+                  type: long
+                  autoIncrement: true
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+              - column:
+                  name: authority
+                  type: varchar(50)
+                  constraints:
+                    nullable: false

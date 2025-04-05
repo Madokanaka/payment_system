@@ -1,0 +1,25 @@
+databaseChangeLog:
+  - changeSet:
+      author: Seitek
+      id: 002 create roles table
+      changes:
+        - createTable:
+            tableName: roles
+            columns:
+              - column:
+                  name: id
+                  type: long
+                  autoIncrement: true
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+              - column:
+                  name: role
+                  type: varchar(50)
+              - column:
+                  name: authority_id
+                  type: long
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_authority_id
+                    references: authorities(id)
