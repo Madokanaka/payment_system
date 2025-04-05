@@ -1,6 +1,6 @@
 databaseChangeLog:
   - changeSet:
-      id: 009-create-users-table
+      id: 003-create-users-table
       author: Seitek
       changes:
         - createTable:
