@@ -57,7 +57,7 @@ public class AccountServiceImpl implements AccountService {
         if (principal == null) {
             throw new BadRequestException("User is not authenticated");
         }
-        Currency currency = currencyDAO.findCurrencyByName(currencyName);
+        Currency currency = currencyDAO.findCurrencyByName(currencyName.toUpperCase());
 
         if (currency == null) {
             throw new CurrencyNotFoundException("Currency not found");

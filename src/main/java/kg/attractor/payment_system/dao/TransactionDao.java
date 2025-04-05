@@ -31,4 +31,18 @@ public class TransactionDao {
                 rs.getTimestamp("approved_at")
         ), accountId, accountId);
     }
+
+    public int createTransaction(Transaction transaction) {
+        String sql = "INSERT INTO transactions (sender_account_id, receiver_account_id, amount, status, " +
+                "transaction_type, created_at, approved_at) VALUES (?, ?, ?, ?, ?, ?, ?)";
+
+        return jdbcTemplate.update(sql,
+                transaction.getSenderAccountId(),
+                transaction.getReceiverAccountId(),
+                transaction.getAmount(),
+                transaction.getStatus(),
+                transaction.getTransactionType(),
+                transaction.getCreatedAt(),
+                transaction.getApprovedAt());
+    }
 }
