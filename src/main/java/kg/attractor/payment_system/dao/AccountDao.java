@@ -38,9 +38,20 @@ public class AccountDao {
         return jdbcTemplate.queryForObject(sql, ACCOUNT_ROW_MAPPER, accountNumber);
     }
 
+    public Account findAccountByAccountId(Long accountId) {
+        String sql = "SELECT * FROM accounts WHERE id = ?";
+        return jdbcTemplate.queryForObject(sql, ACCOUNT_ROW_MAPPER, accountId);
+    }
+
     public boolean existsByAccountNumber(String accountNumber) {
         String sql = "SELECT COUNT(*) FROM accounts WHERE account_number = ?";
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, accountNumber);
+        return count != null && count > 0;
+    }
+
+    public boolean existsByAccountId(Long accountId) {
+        String sql = "SELECT COUNT(*) FROM accounts WHERE id = ?";
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, accountId);
         return count != null && count > 0;
     }
 
