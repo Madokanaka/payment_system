@@ -3,6 +3,7 @@ package kg.attractor.payment_system.service.impl;
 import kg.attractor.payment_system.dao.AccountDao;
 import kg.attractor.payment_system.dao.CurrencyDao;
 import kg.attractor.payment_system.dao.UserDao;
+import kg.attractor.payment_system.dto.AccountResponseDto;
 import kg.attractor.payment_system.dto.BalanceUpdateRequestDto;
 import kg.attractor.payment_system.exception.BadRequestException;
 import kg.attractor.payment_system.exception.CurrencyNotFoundException;
@@ -21,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class AccountServiceImpl implements AccountService {
@@ -35,8 +37,18 @@ public class AccountServiceImpl implements AccountService {
     private UserDao userDao;
 
     @Override
-    public List<Account> getAccountsForUser(Long userId) {
-        return accountDAO.findAccountsByUserId(userId);
+    public List<AccountResponseDto> getAccountsForUser(User principal) {
+        if (principal == null) {
+            throw new BadRequestException("User is not authenticated");
+        }
+        Long userId = userDao.getIdByPhoneNumber(principal.getUsername());
+        List<Account> accounts = accountDAO.findAccountsByUserId(userId);
+        if (accounts.isEmpty()) {
+            throw new AccountNotFoundException("User has no accounts yet");
+        }
+        return accounts.stream()
+                .map(account -> new AccountResponseDto(account.getAccountNumber(), account.getBalance()))
+                .collect(Collectors.toList());
     }
 
     @Transactional
