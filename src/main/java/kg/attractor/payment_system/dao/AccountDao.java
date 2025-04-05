@@ -55,5 +55,10 @@ public class AccountDao {
         Integer count = jdbcTemplate.queryForObject(query, Integer.class, userId, currencyId);
         return count != null ? count : 0;
     }
+
+    public void updateBalance(Account account) {
+        String sql = "UPDATE accounts SET balance = ? WHERE account_number = ?";
+        jdbcTemplate.update(sql, account.getBalance(), account.getAccountNumber());
+    }
 }
 

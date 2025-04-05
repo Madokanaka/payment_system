@@ -3,6 +3,7 @@ package kg.attractor.payment_system.service.impl;
 import kg.attractor.payment_system.dao.AccountDao;
 import kg.attractor.payment_system.dao.CurrencyDao;
 import kg.attractor.payment_system.dao.UserDao;
+import kg.attractor.payment_system.dto.BalanceUpdateRequestDto;
 import kg.attractor.payment_system.exception.BadRequestException;
 import kg.attractor.payment_system.exception.CurrencyNotFoundException;
 import kg.attractor.payment_system.exception.AccountNotFoundException;
@@ -87,4 +88,29 @@ public class AccountServiceImpl implements AccountService {
 
         return "Account balance: " + formattedBalance;
     }
+
+    @Transactional
+    @Override
+    public void updateBalance(User principal, BalanceUpdateRequestDto balanceUpdateRequestDto) {
+        if (principal == null) {
+            throw new BadRequestException("User is not authenticated");
+        }
+        String accountNumber = balanceUpdateRequestDto.getAccountNumber();
+        BigDecimal amount = balanceUpdateRequestDto.getAmount();
+
+        if (!accountDAO.existsByAccountNumber(accountNumber)) {
+            throw new AccountNotFoundException("Account with the account number " + accountNumber + " was not found");
+        }
+        Account account = accountDAO.findAccountByAccountNumber(accountNumber);
+
+        Long userId = userDao.getIdByPhoneNumber(principal.getUsername());
+        if (!userId.equals(account.getUserId())) {
+            throw new BadRequestException("Account belongs to another user");
+        }
+
+        account.setBalance(account.getBalance().add(amount));
+
+        accountDAO.updateBalance(account);
+    }
+
 }

@@ -1,9 +1,12 @@
 package kg.attractor.payment_system.controller;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import kg.attractor.payment_system.dto.AccountRequestDto;
+import kg.attractor.payment_system.dto.BalanceUpdateRequestDto;
 import kg.attractor.payment_system.service.AccountService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.*;
@@ -31,5 +34,15 @@ public class AccountController {
             String accountNumber) {
 
         return accountService.getAccountBalance(accountNumber);
+    }
+
+    @PostMapping("/balance")
+    public ResponseEntity<String> updateBalance(
+            @AuthenticationPrincipal User principal,
+            @Valid @RequestBody BalanceUpdateRequestDto requestDto) {
+
+        accountService.updateBalance(principal, requestDto);
+
+        return ResponseEntity.ok("Balance updated successfully!");
     }
 }
