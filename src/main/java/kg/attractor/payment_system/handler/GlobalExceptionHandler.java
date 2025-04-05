@@ -2,6 +2,7 @@ package kg.attractor.payment_system.handler;
 
 import kg.attractor.payment_system.exception.BadRequestException;
 import kg.attractor.payment_system.exception.DatabaseOperationException;
+import kg.attractor.payment_system.exception.NotAcceptableException;
 import kg.attractor.payment_system.exception.RecordAlreadyExistsException;
 import kg.attractor.payment_system.service.ErrorService;
 import lombok.RequiredArgsConstructor;
@@ -44,4 +45,8 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
 
+    @ExceptionHandler(NotAcceptableException.class)
+    public ResponseEntity<String> handleNotAcceptableException(NotAcceptableException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(ex.getMessage());
+    }
 }
