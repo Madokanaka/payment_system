@@ -1,4 +1,4 @@
-INSERT INTO users (phone_number, username, password, is_enabled, role_id)
+INSERT INTO users (phone_number, username, password, enabled, role_id)
 VALUES
     ('996 (700) 00-00-01', 'admin', '$2y$10$fp.GlNCVhkvtMD.1WBdAKuRAoxwoA9pFLbF4166lc1ZkETCptKatq', true, (SELECT id FROM roles WHERE role = 'ADMIN')),
     ('996 (700) 00-00-02', 'applicant', '$2y$10$fp.GlNCVhkvtMD.1WBdAKuRAoxwoA9pFLbF4166lc1ZkETCptKatq', true, (SELECT id FROM roles WHERE role = 'APPLICANT'));

@@ -60,4 +60,9 @@ public class UserDao {
         String sql = "SELECT id FROM roles WHERE role = ?";
         return jdbcTemplate.queryForObject(sql, Long.class, roleName);
     }
+
+    public Long getIdByPhoneNumber(String number) {
+        String sql = "SELECT id FROM users WHERE phone_number = ?";
+        return jdbcTemplate.queryForObject(sql, Long.class, number);
+    }
 }

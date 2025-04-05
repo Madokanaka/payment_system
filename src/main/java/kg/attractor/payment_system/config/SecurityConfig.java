@@ -31,10 +31,10 @@ public class SecurityConfig {
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
         String fetchUser = "select phone_number, password, enabled " +
                 "from USERS " +
-                "where email = ?";
+                "where phone_number = ?";
         String fetchRoles = "select phone_number, role " +
                 "from USERS u, roles r " +
-                "where u.email = ? " +
+                "where u.phone_number = ? " +
                 "and u.role_id = r.id ";
         auth.jdbcAuthentication()
                 .dataSource(dataSource)
@@ -53,6 +53,7 @@ public class SecurityConfig {
                 .logout(AbstractHttpConfigurer::disable)
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
+                        .requestMatchers("/api/accounts/**").hasAnyAuthority("APPLICANT", "ADMIN")
                         .anyRequest().permitAll()
                 );
                 return http.build();
