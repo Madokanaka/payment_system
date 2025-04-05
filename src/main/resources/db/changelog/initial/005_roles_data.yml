@@ -1,0 +1,11 @@
+databaseChangeLog:
+  - changeSet:
+      id: 005 insert data into roles table
+      author: Seitek
+      changes:
+        - sql:
+            comment: Insert data into roles table
+            sql: |
+              insert into roles(role, authority_id)
+              values('ADMIN', (select id from authorities where authority = 'FULL')),
+                    ('APPLICANT', (select id from authorities where authority = 'APPLICANT_ACCESS'));
