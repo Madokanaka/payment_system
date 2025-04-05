@@ -8,4 +8,6 @@ public interface AdminService {
     List<TransactionDto> getAllTransactions();
 
     List<TransactionDto> getPendingApprovalTransactions();
+
+    void approveTransaction(Long transactionId);
 }

@@ -2,6 +2,7 @@ package kg.attractor.payment_system.dao;
 
 import kg.attractor.payment_system.model.Transaction;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
@@ -72,6 +73,35 @@ public class TransactionDao {
                 rs.getTimestamp("created_at"),
                 rs.getTimestamp("approved_at")
         ));
+    }
+
+    public boolean existsById(Long transactionId) {
+        String sql = "SELECT COUNT(*) FROM transactions WHERE id = ?";
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, transactionId);
+        return count != null && count > 0;
+    }
+
+    public Transaction findById(Long transactionId) {
+        String sql = "SELECT * FROM transactions WHERE id = ?";
+        try {
+            return jdbcTemplate.queryForObject(sql, (rs, rowNum) -> new Transaction(
+                    rs.getLong("id"),
+                    rs.getLong("sender_account_id"),
+                    rs.getLong("receiver_account_id"),
+                    rs.getBigDecimal("amount"),
+                    rs.getString("status"),
+                    rs.getString("transaction_type"),
+                    rs.getTimestamp("created_at"),
+                    rs.getTimestamp("approved_at")
+            ), transactionId);
+        } catch (EmptyResultDataAccessException e) {
+            return null;
+        }
+    }
+
+    public int updateTransactionStatus(Transaction transaction) {
+        String sql = "UPDATE transactions SET status = ?, approved_at = ? WHERE id = ?";
+        return jdbcTemplate.update(sql, transaction.getStatus(), transaction.getApprovedAt(), transaction.getId());
     }
 
 }

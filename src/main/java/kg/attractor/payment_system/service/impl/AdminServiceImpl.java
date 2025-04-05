@@ -3,13 +3,17 @@ package kg.attractor.payment_system.service.impl;
 import kg.attractor.payment_system.dao.AccountDao;
 import kg.attractor.payment_system.dao.TransactionDao;
 import kg.attractor.payment_system.dto.TransactionDto;
+import kg.attractor.payment_system.exception.BadRequestException;
 import kg.attractor.payment_system.exception.TransactionNotFoundException;
 import kg.attractor.payment_system.model.Account;
 import kg.attractor.payment_system.model.Transaction;
 import kg.attractor.payment_system.service.AdminService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -58,5 +62,27 @@ public class AdminServiceImpl implements AdminService {
                     );
                 })
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public void approveTransaction(Long transactionId) {
+        if (!transactionDao.existsById(transactionId)) {
+            throw new TransactionNotFoundException("Transaction not found");
+        }
+        Transaction transaction = transactionDao.findById(transactionId);
+
+        if (transaction.getStatus().equals("PENDING")) {
+            if (transaction.getAmount().compareTo(BigDecimal.valueOf(10)) > 0) {
+                transaction.setStatus("APPROVED");
+                transaction.setApprovedAt(new Timestamp(System.currentTimeMillis()));
+
+                transactionDao.updateTransactionStatus(transaction);
+            } else {
+                throw new BadRequestException("Transaction does not require approval.");
+            }
+        } else {
+            throw new BadRequestException("Transaction has already been processed.");
+        }
     }
 }

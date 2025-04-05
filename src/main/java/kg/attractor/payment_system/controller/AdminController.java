@@ -1,9 +1,11 @@
 package kg.attractor.payment_system.controller;
 
+import jakarta.validation.constraints.Min;
 import kg.attractor.payment_system.dto.TransactionDto;
 import kg.attractor.payment_system.service.AdminService;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,4 +27,9 @@ public class AdminController {
         return adminTransactionService.getPendingApprovalTransactions();
     }
 
+    @PostMapping("/approval")
+    public ResponseEntity<?> approveTransaction(@Min(value = 1, message = "Minimal value is 1") @RequestParam Long transactionId) {
+        adminTransactionService.approveTransaction(transactionId);
+        return ResponseEntity.ok("Transaction approved successfully.");
+    }
 }
