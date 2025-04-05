@@ -128,4 +128,30 @@ public class AdminServiceImpl implements AdminService {
         transaction.setStatus("ROLLED_BACK");
         transactionDao.updateTransactionStatus(transaction);
     }
+
+    @Transactional
+    @Override
+    public void deleteTransaction(Long transactionRollbackId) {
+        if (!transactionRollbackDao.existsById(transactionRollbackId)) {
+            throw new TransactionNotFoundException("Transaction rollback entry not found.");
+        }
+
+        TransactionRollback rollback = transactionRollbackDao.findById(transactionRollbackId);
+        if (!transactionDao.existsById(rollback.getTransactionId())) {
+            throw new TransactionNotFoundException("Transaction not found.");
+        }
+        Transaction transaction = transactionDao.findById(rollback.getTransactionId());
+
+        if (transaction.getStatus().equals("DELETED")) {
+            throw new BadRequestException("Transaction has already been marked as deleted.");
+        }
+
+        if (!transaction.getStatus().equals("ROLLED_BACK")) {
+            throw new BadRequestException("Transaction must be rolled back before deletion.");
+        }
+
+
+        transaction.setStatus("DELETED");
+        transactionDao.updateTransactionStatus(transaction);
+    }
 }

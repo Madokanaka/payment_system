@@ -38,5 +38,11 @@ public class AdminController {
         adminTransactionService.rollbackTransaction(transactionId);
         return ResponseEntity.ok("Transaction rolled back successfully.");
     }
+
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<String> deleteTransaction(@PathVariable Long id) {
+        adminTransactionService.deleteTransaction(id);
+        return ResponseEntity.ok("Transaction marked as deleted successfully.");
+    }
 }
 

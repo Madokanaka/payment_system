@@ -14,4 +14,7 @@ public interface AdminService {
 
     @Transactional
     void rollbackTransaction(Long transactionId);
+
+    @Transactional
+    void deleteTransaction(Long transactionRollbackId);
 }
