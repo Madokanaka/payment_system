@@ -1,6 +1,7 @@
 package kg.attractor.payment_system.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -14,6 +15,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class UserDto {
     @Pattern(regexp = "996\\s\\(\\d{3}\\)\\s\\d{2}-\\d{2}-\\d{2}", message = "Phone number must match pattern: 996 (XXX) XX-XX-XX")
+    @NotNull(message = "Phone number cannot be null.")
     private String phoneNumber;
 
     @NotBlank
