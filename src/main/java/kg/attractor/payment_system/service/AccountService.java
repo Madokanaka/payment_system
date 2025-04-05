@@ -9,4 +9,6 @@ public interface AccountService {
     List<Account> getAccountsForUser(Long userId);
 
     String createAccount(User s, String currencyName);
+
+    String getAccountBalance(String accountNumber);
 }

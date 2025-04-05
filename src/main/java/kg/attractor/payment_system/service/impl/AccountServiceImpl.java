@@ -5,6 +5,7 @@ import kg.attractor.payment_system.dao.CurrencyDao;
 import kg.attractor.payment_system.dao.UserDao;
 import kg.attractor.payment_system.exception.BadRequestException;
 import kg.attractor.payment_system.exception.CurrencyNotFoundException;
+import kg.attractor.payment_system.exception.AccountNotFoundException;
 import kg.attractor.payment_system.model.Account;
 import kg.attractor.payment_system.model.Currency;
 import kg.attractor.payment_system.service.AccountService;
@@ -15,6 +16,9 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.transaction.annotation.Transactional;
 
 
+
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import java.util.List;
 
 @Service
@@ -67,5 +71,20 @@ public class AccountServiceImpl implements AccountService {
 
         accountDAO.createAccount(userId, currency.getId(), accountNumber);
         return accountNumber;
+    }
+
+    @Override
+    public String getAccountBalance(String accountNumber) {
+        if (!accountDAO.existsByAccountNumber(accountNumber)) {
+            throw new AccountNotFoundException("Account with the account number " + accountNumber + " was not found");
+        }
+
+        Account account = accountDAO.findAccountByAccountNumber(accountNumber);
+
+        BigDecimal balance = account.getBalance();
+        DecimalFormat df = new DecimalFormat("0.00");
+        String formattedBalance = df.format(balance);
+
+        return "Account balance: " + formattedBalance;
     }
 }
