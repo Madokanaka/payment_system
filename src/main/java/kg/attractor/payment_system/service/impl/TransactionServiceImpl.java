@@ -51,6 +51,7 @@ public class TransactionServiceImpl implements TransactionService {
             String receiverAccountNumber = accountDao.findAccountByAccountId(transaction.getReceiverAccountId()).getAccountNumber();
 
             return new TransactionDto(
+                    transaction.getId(),
                     senderAccountNumber,
                     receiverAccountNumber,
                     transaction.getAmount(),

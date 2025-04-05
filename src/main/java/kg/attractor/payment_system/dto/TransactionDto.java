@@ -13,6 +13,7 @@ import java.sql.Timestamp;
 @AllArgsConstructor
 @NoArgsConstructor
 public class TransactionDto {
+    private Long id;
     private String senderAccountNumber;
     private String receiverAccountNumber;
     private BigDecimal amount;

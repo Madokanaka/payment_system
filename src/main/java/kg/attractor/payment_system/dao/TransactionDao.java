@@ -45,4 +45,33 @@ public class TransactionDao {
                 transaction.getCreatedAt(),
                 transaction.getApprovedAt());
     }
+
+    public List<Transaction> findAll() {
+        String sql = "SELECT * FROM transactions ORDER BY created_at DESC";
+        return jdbcTemplate.query(sql, (rs, rowNum) -> new Transaction(
+                rs.getLong("id"),
+                rs.getLong("sender_account_id"),
+                rs.getLong("receiver_account_id"),
+                rs.getBigDecimal("amount"),
+                rs.getString("status"),
+                rs.getString("transaction_type"),
+                rs.getTimestamp("created_at"),
+                rs.getTimestamp("approved_at")
+        ));
+    }
+
+    public List<Transaction> findPendingApprovalTransactions() {
+        String sql = "SELECT * FROM transactions WHERE status = 'PENDING' ORDER BY created_at DESC";
+        return jdbcTemplate.query(sql, (rs, rowNum) -> new Transaction(
+                rs.getLong("id"),
+                rs.getLong("sender_account_id"),
+                rs.getLong("receiver_account_id"),
+                rs.getBigDecimal("amount"),
+                rs.getString("status"),
+                rs.getString("transaction_type"),
+                rs.getTimestamp("created_at"),
+                rs.getTimestamp("approved_at")
+        ));
+    }
+
 }
