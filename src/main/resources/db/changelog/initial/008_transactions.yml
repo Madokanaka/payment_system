@@ -1,0 +1,55 @@
+databaseChangeLog:
+  - changeSet:
+      id: 008 transactions
+      author: Seitek
+      changes:
+      - createTable:
+          tableName: transactions
+          columns:
+            - column:
+                name: id
+                type: long
+                autoIncrement: true
+                constraints:
+                  nullable: false
+                  primaryKey: true
+            - column:
+                name: sender_account_id
+                type: long
+                constraints:
+                  nullable: false
+                  foreignKeyName: fk_sender_account_id
+                  references: accounts(id)
+            - column:
+                name: receiver_account_id
+                type: long
+                constraints:
+                  nullable: false
+                  foreignKeyName: fk_receiver_account_id
+                  references: accounts(id)
+            - column:
+                name: amount
+                type: decimal(15, 2)
+                constraints:
+                  nullable: false
+            - column:
+                name: status
+                type: varchar(50)
+                defaultValue: 'PENDING'
+                constraints:
+                  nullable: false
+            - column:
+                name: transaction_type
+                type: varchar(50)
+                constraints:
+                  nullable: false
+            - column:
+                name: created_at
+                type: timestamp
+                constraints:
+                  nullable: false
+            - column:
+                name: approved_at
+                type: timestamp
+                constraints:
+                  nullable: true

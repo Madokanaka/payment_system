@@ -1,0 +1,40 @@
+databaseChangeLog:
+  - changeSet:
+      id: 007 accounts
+      author: Seitek
+      changes:
+        - createTable:
+            tableName: accounts
+            columns:
+              - column:
+                  name: id
+                  type: long
+                  autoIncrement: true
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+              - column:
+                  name: user_id
+                  type: long
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_user_id
+                    references: users(id)
+              - column:
+                  name: currency_id
+                  type: long
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_currency_id
+                    references: currencies(id)
+              - column:
+                  name: balance
+                  type: decimal(15, 2)
+                  defaultValue: 0.00
+                  constraints:
+                    nullable: false
+              - column:
+                  name: account_number
+                  type: varchar(20)
+                  constraints:
+                    nullable: false
